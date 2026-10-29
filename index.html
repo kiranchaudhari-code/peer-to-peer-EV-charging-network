@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Peer-to-peer EV charging prototype</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700&family=DM+Sans:wght@400;500;700&display=swap">
+<style>
+:root{color-scheme:light;--bg:#E9EFEC;--sf:#fff;--tx:#0F2A27;--mu:#58706A;--ln:#DCE5E1;--pr:#0F5B4D;--onpr:#fff;--mint:#E3F1EC;--am:#F5B700;--onam:#0F2A27;--bad:#B3402A;--map:#E6EEE9;--rd:#fff;--pk:#CBE4D2;--you:#2563EB;
+--hd:'Bricolage Grotesque','Trebuchet MS',sans-serif;--bd:'DM Sans',system-ui,sans-serif;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--bg:#081210;--sf:#12201D;--tx:#E5F0EC;--mu:#8CA39D;--ln:#243632;--pr:#4CC9A6;--onpr:#08201A;--mint:#183029;--bad:#E48B74;--map:#162623;--rd:#25382F;--pk:#1B3A2C;--you:#6EA0FF}}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#081210;--sf:#12201D;--tx:#E5F0EC;--mu:#8CA39D;--ln:#243632;--pr:#4CC9A6;--onpr:#08201A;--mint:#183029;--bad:#E48B74;--map:#162623;--rd:#25382F;--pk:#1B3A2C;--you:#6EA0FF}
+*,*::before,*::after{box-sizing:inherit}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--tx);font:400 15px/1.4 var(--bd);display:flex;justify-content:center;align-items:center}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible{outline:3px solid var(--am);outline-offset:2px}
+.phone{width:100%;max-width:400px;height:100%;max-height:820px;background:var(--sf);display:flex;flex-direction:column;overflow:hidden;border-radius:28px;border:1px solid var(--ln);box-shadow:0 18px 50px rgba(0,0,0,.18)}
+@media (max-width:480px){.phone{border-radius:0;border:0;max-height:none;box-shadow:none}}
+.scr{flex:1;display:flex;flex-direction:column;min-height:0}
+h1,h2,h3,b{font-family:var(--hd)}
+h2{font-size:17px;margin:0 0 8px}
+p{margin:0}
+.top{padding:12px 16px 8px}
+.loc{display:flex;justify-content:space-between;gap:10px;align-items:center}
+.loc b{display:block;font-size:16px}
+.loc span,.mu,.rows span,.stats span,.earn span{color:var(--mu);font-size:13px}
+.bat{background:var(--am);color:var(--onam)!important;font-weight:700;border-radius:20px;padding:4px 10px;white-space:nowrap}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:10px 0 2px}
+.chip{border:1px solid var(--ln);background:var(--sf);border-radius:20px;padding:6px 14px;white-space:nowrap;font-weight:500}
+.chip.on{background:var(--pr);color:var(--onpr);border-color:var(--pr)}
+.map{width:100%;height:215px;flex:none;display:block;background:var(--map)}
+.r1{stroke:var(--rd);stroke-width:16;fill:none}.r2{stroke:var(--rd);stroke-width:8;fill:none}
+.pk{fill:var(--pk)}
+.pin{cursor:pointer}.pin text{font:700 12px var(--bd)}
+.pn rect,.pn path{fill:var(--sf);stroke:var(--pr);stroke-width:1.5}.pn text{fill:var(--pr)}
+.ps rect,.ps path{fill:var(--pr);stroke:var(--pr)}.ps text{fill:var(--onpr)}
+.pb rect,.pb path{fill:var(--ln);stroke:var(--mu);stroke-width:1}.pb text{fill:var(--mu)}
+.sheet{flex:1;overflow-y:auto;padding:14px 16px;border-top:1px solid var(--ln);min-height:0}
+.card{display:flex;gap:12px;align-items:center;width:100%;text-align:left;background:var(--sf);border:1px solid var(--ln);border-radius:14px;padding:10px 12px;margin-bottom:10px}
+.card.sel{border:2px solid var(--pr);background:var(--mint)}
+.kwb{flex:none;width:48px;height:48px;border-radius:12px;background:var(--mint);color:var(--pr);display:grid;place-items:center;font:700 15px var(--hd);text-align:center;line-height:1}
+.kwb small{display:block;font:500 10px var(--bd)}
+.card .m{flex:1;min-width:0}.card .m b{display:block;font-size:15px}
+.tags{display:flex;gap:6px;margin-top:4px;flex-wrap:wrap}
+.tag{background:var(--mint);color:var(--pr);border-radius:6px;padding:1px 7px;font-size:12px;font-weight:700}
+.pc{text-align:right}.pc b{font-size:16px}.pc span{display:block;font-size:12px;color:var(--pr);font-weight:700}.pc span.busy{color:var(--bad)}
+.empty{color:var(--mu);padding:20px 0;text-align:center}
+.tabs{display:flex;border-top:1px solid var(--ln);flex:none}
+.tabs button{flex:1;background:none;border:0;padding:14px;font-weight:700;color:var(--mu)}
+.tabs button.on{color:var(--pr);box-shadow:inset 0 -3px 0 var(--pr)}
+.bar{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--ln);flex:none}
+.bk{background:var(--mint);border:0;border-radius:10px;width:36px;height:36px;font-size:18px}
+.body{flex:1;overflow-y:auto;padding:16px;min-height:0}
+.ctr{display:flex;flex-direction:column;align-items:center;text-align:center}
+.hero{display:flex;gap:14px;align-items:center;background:var(--pr);color:var(--onpr);border-radius:16px;padding:16px;margin-bottom:14px}
+.hero .kw{font:700 34px var(--hd);line-height:1}.hero .kw small{font-size:14px;margin-left:2px}
+.hero h2{margin:0 0 2px}.hero p{font-size:13px;opacity:.9}
+.rows>div{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid var(--ln)}
+.rows b{font-size:14px;text-align:right}
+.safe{background:var(--mint);border-radius:14px;padding:12px 14px;margin:14px 0}
+.safe p{padding:2px 0}.safe p::before{content:"✓ ";color:var(--pr);font-weight:700}
+.quote{border-left:3px solid var(--am);padding-left:10px;color:var(--mu);font-size:14px}
+.foot{padding:12px 16px;border-top:1px solid var(--ln);flex:none}
+.btn{width:100%;background:var(--pr);color:var(--onpr);border:0;border-radius:14px;padding:14px;font:700 16px var(--bd)}
+.btn.am{background:var(--am);color:var(--onam)}.btn:disabled{background:var(--ln);color:var(--mu);cursor:default}
+.btn.gh{background:var(--mint);color:var(--pr)}
+.dur{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:8px 0 16px}
+.dur .chip{border-radius:12px;padding:12px 0;text-align:center;font-weight:700}
+.est{background:var(--mint);border-radius:14px;padding:6px 14px;margin-bottom:12px}
+.est>div{display:flex;justify-content:space-between;padding:8px 0}
+.est .t{border-top:1px solid var(--ln);font:700 17px var(--hd)}
+.note{color:var(--mu);font-size:13px;margin:6px 0}
+.upi{display:flex;justify-content:space-between;border:1px solid var(--ln);border-radius:12px;padding:12px 14px;margin-top:10px}
+.ring{width:210px;margin:18px 0 8px}
+.rb{fill:none;stroke:var(--ln);stroke-width:12}.rf{fill:none;stroke:var(--pr);stroke-width:12;stroke-linecap:round;transition:stroke-dashoffset .3s linear}
+.rk{font:700 34px var(--hd);fill:var(--tx)}.ru{font:500 13px var(--bd);fill:var(--mu)}
+.stats,.earn{display:flex;gap:12px;width:100%}
+.stats>div,.earn>div{flex:1;background:var(--mint);border-radius:14px;padding:12px}
+.stats b,.earn b{display:block;font-size:22px}
+.stars{display:flex;gap:6px;justify-content:center;margin:10px 0}
+.stars button{background:none;border:0;font-size:30px;color:var(--ln);padding:0 2px}.stars button.on{color:var(--am)}
+.tog{display:flex;justify-content:space-between;align-items:center;gap:12px;border:1px solid var(--ln);border-radius:14px;padding:14px;margin-bottom:12px}
+.tog b{display:block}.tog span{font-size:13px;color:var(--mu)}
+.sw{width:52px;height:30px;border-radius:15px;border:0;background:var(--ln);position:relative;flex:none}
+.sw i{position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:var(--sf);transition:left .15s}
+.sw.on{background:var(--pr)}.sw.on i{left:25px}
+.req{border:2px solid var(--am);border-radius:14px;padding:14px;margin-top:12px}
+.req .two{display:flex;gap:10px;margin-top:12px}
+.big{font:700 28px var(--hd);margin:6px 0}
+.batrow{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;margin-top:10px}
+.batrow label{font-weight:700}
+.batrow input{flex:1;min-width:120px;accent-color:var(--pr)}
+.batrow span{flex-basis:100%;font-size:13px;color:var(--mu)}
+.tag.no{background:transparent;border:1px solid var(--bad);color:var(--bad)}
+.lock{font-size:13px;color:var(--mu);margin-top:10px}
+.pv>div{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--ln)}
+.pv span{font-size:13px;color:var(--mu);display:block}
+.pv .on{color:var(--pr);font-weight:700;white-space:nowrap}
+.btn.sm{margin-top:12px}
+@media (prefers-reduced-motion:reduce){.rf,.sw i{transition:none}}
+</style></head>
+<body>
+<main class="phone" id="app" aria-live="polite"></main>
+<script>
+const D=[
+{id:1,n:"Raju’s Tea Stall",o:"Raju",t:"Tea stall",d:.2,kw:3.3,c:["2W","3W"],p:14,r:4.8,rv:132,a:1,x:205,y:108,h:"6 am to 10 pm",q:"Plugged in while I had chai. Super easy."},
+{id:2,n:"Sharma Electronics",o:"Mr. Sharma",t:"Shop",d:.4,kw:7.4,c:["Type 2"],p:16,r:4.6,rv:58,a:1,x:92,y:72,h:"10 am to 9 pm",q:"Fast charger, helpful owner."},
+{id:3,n:"BrewLab Café",o:"Neha",t:"Café",d:.7,kw:7.4,c:["Type 2","2W"],p:17,r:4.7,rv:96,a:1,x:268,y:62,h:"8 am to 11 pm",q:"Got 20 km range over a coffee."},
+{id:4,n:"Sunrise Apartments",o:"The society",t:"Society visitor bay",d:.9,kw:3.3,c:["2W"],p:12,r:4.5,rv:41,a:0,x:112,y:176,h:"24 hours",q:"Cheapest rate nearby."},
+{id:5,n:"Kiran Auto Garage",o:"Kiran",t:"Garage",d:1.2,kw:30,c:["CCS2"],p:22,r:4.7,rv:73,a:1,x:306,y:152,h:"9 am to 8 pm",q:"Real fast charging for my car."},
+{id:6,n:"TechPark Gate 2",o:"The office",t:"Office",d:1.5,kw:15,c:["CCS2","Type 2"],p:18,r:4.4,rv:35,a:1,x:182,y:40,h:"7 am to 9 pm",q:"Good after office hours."}];
+const S={v:"find",sel:1,f:"All",now:false,id:null,m:20,on:true,hq:0,rate:0,res:null,bat:8,loc:true,hist:true,pm:""};
+const ADDR={1:"Raju’s Tea Stall, 14th Cross, Indiranagar",2:"Sharma Electronics, 80 Feet Road, Indiranagar",3:"BrewLab Café, 100 Feet Road, Indiranagar",4:"Sunrise Apartments, 9th Main, Indiranagar",5:"Kiran Auto Garage, CMH Road, Indiranagar",6:"TechPark Gate 2, Old Madras Road"};
+const km=c=>Math.round(c.d*14)/10;
+const ok=c=>km(c)<=S.bat*.75;
+const rng=()=>`About ${Math.round(S.bat*7.5)/10} km of range left (demo scooter, 75 km on a full charge)`;
+const rtag=c=>`<span class="tag rc${ok(c)?"":" no"}" id="rc${c.id}">${ok(c)?"Reachable":"Too far"}</span>`;
+const A=document.getElementById("app");let tick,wait;
+const cur=()=>D.find(c=>c.id===S.id)||D[0];
+const R=n=>"₹"+n.toFixed(2);
+const list=()=>D.filter(c=>(S.f==="All"||c.c.includes(S.f))&&(!S.now||c.a)).sort((a,b)=>a.d-b.d);
+const tags=c=>c.c.map(x=>`<span class="tag">${x}</span>`).join("");
+const tabs=v=>`<nav class="tabs"><button class="${v==="find"?"on":""}" data-a="tab" data-v="find">Find</button><button class="${v==="host"?"on":""}" data-a="tab" data-v="host">Host mode</button><button class="${v==="priv"?"on":""}" data-a="tab" data-v="priv">Privacy</button></nav>`;
+function pin(c){const k=!c.a?"pb":c.id===S.sel?"ps":"pn";return `<g class="pin ${k}" data-a="sel" data-v="${c.id}" transform="translate(${c.x-24},${c.y-26})"><rect width="48" height="22" rx="11"/><path d="M20 22h8l-4 6z"/><text x="24" y="15" text-anchor="middle">₹${c.p}</text></g>`}
+function card(c){return `<button class="card ${c.id===S.sel?"sel":""}" id="c${c.id}" data-a="open" data-v="${c.id}"><div class="kwb"><span>${c.kw}<small>kW</small></span></div><div class="m"><b>${c.n}</b><span class="mu">${c.t}, ${c.d} km away</span><div class="tags">${tags(c)}${rtag(c)}</div></div><div class="pc"><b>₹${c.p}</b><span class="mu">per kWh</span><span class="${c.a?"":"busy"}">${c.a?"Available":"In use"}</span></div></button>`}
+function vFind(){const L=list();const pins=L.slice().sort((a,b)=>(a.id===S.sel)-(b.id===S.sel)).map(pin).join("");
+return `<div class="scr"><div class="top"><div class="loc"><div><b>${S.loc?"You’re near 12th Main":"Location is off"}</b><span>${S.loc?"Indiranagar, Bengaluru (demo)":"Showing chargers across the city"}</span></div></div><div class="batrow"><label for="bat">Battery <b id="bv">${S.bat}%</b></label><input type="range" id="bat" min="1" max="100" value="${S.bat}"><span id="rg2">${rng()}</span></div>
+<div class="chips">${["All","2W","3W","Type 2","CCS2"].map(f=>`<button class="chip ${S.f===f?"on":""}" data-a="f" data-v="${f}">${f}</button>`).join("")}<button class="chip ${S.now?"on":""}" data-a="now">Available now</button></div></div>
+<svg class="map" viewBox="0 0 360 215" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Map of nearby chargers"><path class="r1" d="M-10 118H370M150 -10V230"/><path class="r2" d="M-10 52H370M-10 178H370M60 -10V230M250 -10V230M325 -10V230"/><rect class="pk" x="262" y="80" width="56" height="36" rx="8"/>${S.loc?'<circle cx="170" cy="130" r="18" fill="var(--you)" opacity=".18"/><circle cx="170" cy="130" r="7" fill="var(--you)" stroke="#fff" stroke-width="2.5"/>':""}${pins}</svg>
+<div class="sheet" id="sheet"><h2>${L.length} charger${L.length===1?"":"s"} nearby</h2>${L.length?L.map(card).join(""):'<p class="empty">No chargers match these filters. Clear a filter to see more.</p>'}</div>${tabs("find")}</div>`}
+function vDet(){const c=cur();return `<div class="scr"><div class="bar"><button class="bk" data-a="back" aria-label="Back">←</button><b>Charger details</b></div><div class="body">
+<div class="hero"><div class="kw">${c.kw}<small>kW</small></div><div><h2>${c.n}</h2><p>${c.t}, ${c.d} km away</p><p>★ ${c.r} (${c.rv} reviews)</p></div></div>
+<div class="rows"><div><span>Connectors</span><div class="tags">${tags(c)}</div></div><div><span>Price</span><b>₹${c.p} per kWh</b></div><div><span>Open</span><b>${c.h}</b></div><div><span>Host</span><b>${c.o}</b></div><div><span>On your battery</span><b>${ok(c)?"Reachable":"Too far"}, about ${km(c)} km by road</b></div></div><p class="lock">Exact address and phone number are shared only after ${c.o} accepts. Chat and calls stay in the app.</p>
+<div class="safe"><h2>Safety checks</h2><p>Host ID verified</p><p>Earthing and MCB checked</p><p>Charger photo reviewed</p></div>
+<p class="quote">“${c.q}”</p></div>
+<div class="foot"><button class="btn am" data-a="book" ${c.a?"":"disabled"}>${c.a?"Request charge":"In use, free in about 15 min"}</button></div></div>`}
+function est(){const c=cur(),k=c.kw*S.m/60,e=k*c.p,f=e*.12;return{k,e,f,t:e+f}}
+function vBook(){const c=cur(),x=est();return `<div class="scr"><div class="bar"><button class="bk" data-a="open" data-v="${c.id}" aria-label="Back">←</button><b>${c.n}</b></div><div class="body">
+<h2>How long do you need?</h2><div class="dur">${[10,20,30,60].map(m=>`<button class="chip ${S.m===m?"on":""}" data-a="m" data-v="${m}">${m} min</button>`).join("")}</div>
+<div class="est"><div><span>Energy</span><b>${x.k.toFixed(2)} kWh</b></div><div><span>Charging at ₹${c.p} per kWh</span><b>${R(x.e)}</b></div><div><span>Service fee (12%)</span><b>${R(x.f)}</b></div><div class="t"><span>Total</span><span>${R(x.t)}</span></div></div>
+<p class="note">About ${Math.round(x.k*25)} km of range for a scooter. ${c.o} gets the charging amount.</p>
+<div class="upi"><span>Pay with UPI</span><b>you@upi</b></div></div>
+<div class="foot"><button class="btn am" data-a="pay">Pay ${R(x.t)} and send request</button></div></div>`}
+function vCharge(){const c=cur();return `<div class="scr"><div class="bar"><b>Charging at ${c.n}</b></div><div class="body ctr"><p class="note" id="msg">Request sent to ${c.o}…</p>
+<svg class="ring" viewBox="0 0 160 160" role="img" aria-label="Charging progress"><circle class="rb" cx="80" cy="80" r="64"/><circle class="rf" id="rg" cx="80" cy="80" r="64" transform="rotate(-90 80 80)" stroke-dasharray="402.1" stroke-dashoffset="402.1"/><text class="rk" id="kw" x="80" y="84" text-anchor="middle">0.00</text><text class="ru" x="80" y="104" text-anchor="middle">kWh</text></svg>
+<div class="est" id="adr" hidden style="width:100%;text-align:left"><b>Exact address</b><p>${ADDR[c.id]}</p><p class="note">Your phone number stays hidden. Use in-app chat with ${c.o}.</p></div><div class="stats"><div><b id="tm">0 min</b><span>of ${S.m} min</span></div><div><b id="ct">₹0.00</b><span>charging so far</span></div></div></div>
+<div class="foot"><button class="btn" id="sb" data-a="stop" disabled>Stop charging</button></div></div>`}
+function vRec(){const c=cur(),r=S.res,e=r.k*c.p,f=e*.12;return `<div class="scr"><div class="body ctr"><div class="big">✓</div><h2>Charged ${r.k.toFixed(2)} kWh</h2><p class="note">${r.t} min at ${c.n}</p>
+<div class="est" style="width:100%;text-align:left"><div><span>Charging</span><b>${R(e)}</b></div><div><span>Service fee</span><b>${R(f)}</b></div><div class="t"><span>Paid by UPI</span><span>${R(e+f)}</span></div></div>
+<p class="note">${c.o} earned ${R(e)}. How was it?</p><div class="stars">${[1,2,3,4,5].map(i=>`<button class="${S.rate>=i?"on":""}" data-a="rate" data-v="${i}" aria-label="${i} star${i>1?"s":""}">★</button>`).join("")}</div></div>
+<div class="foot"><button class="btn" data-a="done">Done</button></div></div>`}
+function vHost(){const k=3.3*20/60*14;let q="";
+if(S.on){q=S.hq===0?`<div class="req"><b>Aarav needs a charge</b><p class="mu">20 min, about 1.10 kWh, 0.3 km away</p><p class="big">You earn ${R(k)}</p><div class="two"><button class="btn gh" data-a="hq" data-v="2">Decline</button><button class="btn" data-a="hq" data-v="1">Accept</button></div></div>`
+:`<div class="req"><b>${S.hq===1?"Accepted. Aarav is on the way.":"Request declined."}</b><p class="mu">New requests will show up here.</p></div>`}
+else q='<p class="empty">Switch on Available now to receive charging requests.</p>';
+return `<div class="scr"><div class="top"><div class="loc"><div><b>Raju’s Tea Stall</b><span>3.3 kW, 2W and 3W, ₹14 per kWh</span></div></div></div><div class="body">
+<div class="tog"><div><b>Available now</b><span>${S.on?"Visible to EV owners nearby":"Hidden from the map"}</span></div><button class="sw ${S.on?"on":""}" role="switch" aria-checked="${S.on}" aria-label="Available now" data-a="ht"><i></i></button></div>
+<div class="earn"><div><b>₹186</b><span>earned today, 5 sessions</span></div><div><b>₹3,420</b><span>this month</span></div></div>${q}</div>${tabs("host")}</div>`}
+const sw=(a,on,l)=>`<button class="sw ${on?"on":""}" role="switch" aria-checked="${on}" aria-label="${l}" data-a="${a}"><i></i></button>`;
+function vPriv(){return `<div class="scr"><div class="top"><div class="loc"><div><b>Privacy and permissions</b><span>You control what is shared</span></div></div></div><div class="body pv">
+<div><div><b>Location</b><span>Used only while the app is open, to find chargers near you</span></div>${sw("lt",S.loc,"Location")}</div>
+<div><div><b>Charging history</b><span>Keep past sessions in your account</span></div>${sw("hs",S.hist,"Charging history")}</div>
+<div><div><b>Exact address</b><span>Shared only after the host accepts</span></div><span class="on">Always</span></div>
+<div><div><b>Phone number</b><span>Hidden. Chat and calls stay in the app</span></div><span class="on">Hidden</span></div>
+<div><div><b>Payments</b><span>Handled by the payment partner. We never see your UPI PIN or card</span></div><span class="on">Secure</span></div>
+<button class="btn gh sm" data-a="dl">Download my data</button><button class="btn gh sm" data-a="del">Delete my account and data</button>${S.pm?`<p class="note" role="status">${S.pm}</p>`:""}</div>${tabs("priv")}</div>`}
+function render(){A.innerHTML={find:vFind,det:vDet,book:vBook,charge:vCharge,rec:vRec,host:vHost,priv:vPriv}[S.v]();
+if(S.v==="find"){const e=document.getElementById("c"+S.sel);if(e)e.scrollIntoView({block:"nearest"})}}
+function finish(t,k){clearInterval(tick);clearTimeout(wait);S.res={t,k};S.rate=0;S.v="rec";render()}
+function charge(){const c=cur();S.v="charge";render();let t=0;
+wait=setTimeout(()=>{document.getElementById("msg").textContent=c.o+" accepted. Plug in and charging has started.";document.getElementById("sb").disabled=false;document.getElementById("adr").hidden=false;
+tick=setInterval(()=>{t++;const k=c.kw*t/60;document.getElementById("rg").setAttribute("stroke-dashoffset",402.1*(1-t/S.m));document.getElementById("kw").textContent=k.toFixed(2);document.getElementById("tm").textContent=t+" min";document.getElementById("ct").textContent=R(k*c.p);
+if(t>=S.m)finish(t,k)},300)},1600);
+A.__stop=()=>{if(t>0)finish(t,c.kw*t/60);else{clearTimeout(wait);S.v="det";render()}}}
+A.onclick=e=>{const b=e.target.closest("[data-a]");if(!b)return;const a=b.dataset.a,v=b.dataset.v;
+if(a==="tab"){S.v=v;render()}
+else if(a==="f"){S.f=v;if(!list().some(c=>c.id===S.sel)){const l=list();S.sel=l.length?l[0].id:0}render()}
+else if(a==="now"){S.now=!S.now;render()}
+else if(a==="sel"){S.sel=+v;render()}
+else if(a==="open"){S.id=+v;S.sel=+v;S.v="det";render()}
+else if(a==="back"){S.v="find";render()}
+else if(a==="book"){S.v="book";render()}
+else if(a==="m"){S.m=+v;render()}
+else if(a==="pay")charge();
+else if(a==="stop")A.__stop();
+else if(a==="rate"){S.rate=+v;render()}
+else if(a==="done"){S.v="find";render()}
+else if(a==="ht"){S.on=!S.on;render()}
+else if(a==="hq"){S.hq=+v;render()}
+else if(a==="lt"){S.loc=!S.loc;render()}
+else if(a==="hs"){S.hist=!S.hist;render()}
+else if(a==="dl"){S.pm="Your data export is ready (demo). This prototype stores no real data.";render()}
+else if(a==="del"){S.pm=S.pm.startsWith("Tap")?"Account and data deleted (demo).":"Tap Delete again to confirm. This removes your profile and history.";render()}};
+A.oninput=e=>{if(e.target.id!=="bat")return;S.bat=+e.target.value;document.getElementById("bv").textContent=S.bat+"%";document.getElementById("rg2").textContent=rng();D.forEach(c=>{const t=document.getElementById("rc"+c.id);if(t){t.textContent=ok(c)?"Reachable":"Too far";t.className="tag rc"+(ok(c)?"":" no")}})};
+render();
+</script></body></html>
